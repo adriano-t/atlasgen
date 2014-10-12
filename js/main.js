@@ -159,7 +159,7 @@ function Editor(){
 	var finput = $("loadFile");
 	finput.onchange = function(){ 
 	
-		this.rects = [];
+		editor.rects = [];
 		$("imagesContainer").innerHTML = "";
 		for(var i=0; i<this.files.length; i++){
 			var file = this.files[i]; 
