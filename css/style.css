@@ -1,0 +1,50 @@
+
+body,p,div{ margin:0; border:0;padding:0; font:11pt 'Segoe UI', Verdana} 
+p{border:1px solid #ddd; padding:4px; padding-bottom:0px;}
+#help{padding:5px;}
+div{border:1px solid #555;}  
+.icon{
+	border:1px solid #555;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+	background-color: #ddd;
+}
+.icon:hover{ 
+	background-color: #eee;
+}	
+.icon-selected{
+	border:1px solid #555;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+	background-color: #bbb;
+}
+/*SCROLLBAR*/
+::-webkit-scrollbar {
+	width: 0.6em;
+	height: 0.6em;
+	background: #eaeaea;
+	margin-right: 10px;
+}
+
+::-webkit-scrollbar:hover {
+	background-color: #CCC;
+	border: none;
+}
+
+::-webkit-scrollbar-thumb {
+	min-height: 0.6em;
+	min-width: 0.6em;
+	background-color: #888;
+	border: none;
+	box-shadow: inset 1px 1px 10px #666;
+}
+::-webkit-scrollbar-thumb:hover {
+	background-color: #666;
+	border: none;
+}
+::-webkit-scrollbar-thumb:active {
+	background-color: #333;
+	border: none;
+} 

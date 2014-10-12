@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+	<title>Atlas Generator</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<script language="javascript" src="js/main.js" ></script>
+	<script language="javascript" src="js/resources.js" ></script> 
+	<script language="javascript" src="js/utils.js" ></script> 
+	<script language="javascript" src="js/packer.js" ></script> 
+	<script language="javascript" src="js/canvasblob.js" ></script> 
+	<script language="javascript" src="js/FileSaver.js" ></script> 
+	<link rel="stylesheet" type="text/css" href="css/style.css" />
+</head>
+<body style="background-color:#eee;" >
+	<div id="EditorDiv" style="overflow:auto; float:left;" >
+		 
+	</div> 
+	<div id="Options" style="overflow:auto; position:absolute;">
+		 <h2 style="text-align:center;" > Coconart Atlas Generator </h2> 
+		<p>
+			
+			<input style="float:right;" id="showHelp" type="button" value="Help" />
+		</p>
+		 
+		<p>Texture Size: <select id="textureSize" >
+				<option selected="selected"></option>
+				<option >2056</option>
+				<option >1024</option>
+				<option >512</option>
+				<option >256</option>
+				<option >128</option>
+				<option >64</option>
+				<option >32</option>
+			</select> 
+		</p>
+		<p>JSON output: 
+		<input id="export" type="button" value="Generate" />
+		<p>
+		<span id="loadError"></span>
+		<textarea  title="Mesh Output" id="output"  rows="5" cols="32" /></textarea>
+		
+		
+		
+		
+		<p style="margin-top:10px" >Load Images: <input multiple id="loadFile" type="file" style="width:220px;"/> 
+		
+		<p id="imagesContainer"></p>	 
+	
+		
+	</div>
+	
+	<div id="help" style="background-color:#eee; display:none; position:absolute; z-index:1;">
+
+		<input id="closeHelp" type="button" value="close" style="float:left;"  />
+		<h2 style="text-align:center" >HELP</h2> 
+		<p style="font-size:20px" ><b>How to use</b></p>
+		Select multiple files and press GENERATE to create multiple atlases
+		
+		 
+		
+		
+	</div>
+</body>
+</html>
