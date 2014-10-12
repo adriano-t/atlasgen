@@ -57,6 +57,15 @@ function Editor(){
 		editor.Export();
 	};
 	  
+	$("saveFiles").onclick = function(){
+	
+		for(var i=0; i<editor.textures.length; i++){
+			var canvas = editor.textures[i];
+			canvas.toBlob(function(blob) {
+				saveAs(  blob , "Atlas"+(i)+".png" );
+			}, "image/png");
+		}
+	}
 	
 	$("closeHelp").onclick = function(){
 		$("help").style.display="none";
@@ -69,7 +78,7 @@ function Editor(){
 	
 	this.Export = function(){
 		var imagesRects = this.rects.slice();
-		
+		this.textures = [];
 		while (this.div.firstChild) {
 			this.div.removeChild(this.div.firstChild);
 		}
@@ -113,6 +122,7 @@ function Editor(){
 			canvas.style.border = "1px dotted black";
 			canvas.style.width = Math.min(this.textureSize, 150)+"px";
 			canvas.style.height = Math.min(this.textureSize, 150)+"px";
+			this.textures.push(canvas);
 			this.div.appendChild(canvas);
 			  
 			var offset = Math.floor(this.spacing/2);
@@ -133,13 +143,6 @@ function Editor(){
 			}
 			this.rects = temp; 
 			
-			
-			canvas.toBlob(function(blob) {
-			saveAs(
-				  blob
-					, "Atlas"+(atlasCount++)+".png"
-				);
-			}, "image/png");
 			if(iter++ > 1000){
 				console.log("infinite loop!");
 				break; 
@@ -152,6 +155,8 @@ function Editor(){
 		this.rects = imagesRects; 
 		
 		$("output").value = "exported the void!";//JSON.stringify(this.verts);
+		
+		$("saveFiles").style.display = "inline";
 	}
 	 
 	
