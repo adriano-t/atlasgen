@@ -16,24 +16,23 @@
 		 
 	</div> 
 	<div id="Options" style="overflow:auto; position:absolute;">
-		 <h2 style="text-align:center;" > Coconart Atlas Generator </h2> 
+		 <h2 style="text-align:center;" > Atlas Generator </h2> 
 		<p>
 			
 			<input style="float:right;" id="showHelp" type="button" value="Help" />
 		</p>
 		 
-		<p>Texture Size: <select id="textureSize" >
-				<option selected="selected"></option>
+		<p><b>Texture Size</b> <select id="textureSize" > 
 				<option >2048</option>
 				<option >1024</option>
-				<option >512</option>
+				<option selected="selected" >512</option>
 				<option >256</option>
 				<option >128</option>
 				<option >64</option>
 				<option >32</option>
 			</select> 
 		</p>
-		<p>JSON output: 
+		<p><b>Output</b>
 		<input id="export" type="button" value="Generate" />
 		<input id="saveFiles" type="button" style="display:none;" value="Save Files" />
 		<p>
@@ -41,9 +40,8 @@
 		<textarea  title="Mesh Output" id="output"  rows="5" cols="32" /></textarea>
 		
 		
-		
-		
-		<p style="margin-top:10px" >Load Images: <input multiple id="loadFile" type="file" style="width:220px;"/> 
+		 
+		<p><b>Sprites</b> <input id="addSprite" type="button" value="Add" /> </p>
 		
 		<p id="imagesContainer"></p>	 
 	
@@ -56,9 +54,6 @@
 		<h2 style="text-align:center" >HELP</h2> 
 		<p style="font-size:20px" ><b>How to use</b></p>
 		Select multiple files and press GENERATE to create multiple atlases
-		
-		 
-		
 		
 	</div>
 </body>
