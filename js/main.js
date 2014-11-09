@@ -9,7 +9,6 @@ function Editor(){
 	//working area 
 	 
 	this.textures = [];
-	 
 	this.sprites = [];
 	this.spr_name_index = 0;
 	this.textureSize= 512;
@@ -36,7 +35,7 @@ function Editor(){
 		this.divOpt.style.height = (window.innerHeight-5 - 8) + "px"; 
 		this.divOpt.style.left = window.innerWidth - optWidth - 6 +"px" 
 		
-		$("output").style.width = (optWidth -25)  + "px";
+		//$("output").style.width = (optWidth -25)  + "px";
 		
 		var helpW = window.innerWidth*3/4;
 		var helpH = window.innerHeight*4/5;
@@ -58,13 +57,25 @@ function Editor(){
 	};
 	  
 	$("saveFiles").onclick = function(){
-	
+		var currentdate = new Date(); 
+		var fid = currentdate.getDate() + "_"
+                + (currentdate.getMonth()+1)  + "_" 
+                + currentdate.getFullYear() + "_"  
+                + currentdate.getHours() + "_"  
+                + currentdate.getMinutes() + "_" 
+                + currentdate.getSeconds();
+				
 		for(var i=0; i<editor.textures.length; i++){
 			var canvas = editor.textures[i];
 			canvas.toBlob(function(blob) {
-				saveAs(  blob , "Atlas"+(i)+".png" );
+				saveAs(  blob , "AtlasTexture"+fid+".png" );
 			}, "image/png");
 		}
+		for(var i=0; i<editor.sprites.length; i++){
+			var sprite = editor.sprites[i];
+			saveAs(new Blob(["#texture AtlasTexture"+fid+".png\n", sprite.text], {type : 'text'}), sprite.name+".spr" );
+		}
+		
 	}
 	
 	$("closeHelp").onclick = function(){
@@ -93,6 +104,7 @@ function Editor(){
 			name: "sprite" + this.spr_name_index++,
 			width: 0,
 			height: 0,
+			text: ""
 		}; 
 		spr.rects = [];
 		editor.sprites.push(spr);
@@ -150,12 +162,24 @@ function Editor(){
 			finput.click();
 		}
 		
+		var del=document.createElement('input'); 
+		del.type="button";
+		del.value = "x"; 
+		del.sprite = spr;
+		del.finput = finput;
+		del.onclick = function(){
+			if(confirm("Delete "+this.sprite.name+" ?")){
+				this.parentNode.parentNode.removeChild(this.parentNode);
+			}
+			editor.sprites.splice(editor.sprites.indexOf(this.sprite), 1);
+		}
 		
 		
 		$("imagesContainer").appendChild(p);
 		p.appendChild(name);
 		p.appendChild(finput);
 		p.appendChild(input);
+		p.appendChild(del);
 		p.appendChild(container);
 		
 		
@@ -200,9 +224,21 @@ function Editor(){
 						//preview image
 						var img = new Image();
 						img.src = this.result; 
+						img.title = this.name + " ("+img.width+", "+img.height+")";
 						img.width = Math.min(48, img.width);
 						img.height = Math.min(48, img.height);
 						img.style.border = "1px dotted black"; 
+						img.sprite = element.sprite;
+						img.name = this.name;
+						img.onclick = function(e){
+							if(e.shiftKey || e.ctrlKey)
+								editor.RemoveImage(this);
+							else{
+								if (confirm("Delete sprite "+this.name+" ?\n\n (Keep CTRL pressed to avoid this dialog on delete)")) {
+									editor.RemoveImage(this);
+								}
+							}
+						}
 						element.container.appendChild(img); 
 					}else{
 						alert(this.name + " has wrong sizes\n you need: "+element.sprite.width+"x"+element.sprite.height);
@@ -214,22 +250,32 @@ function Editor(){
 		}
 	}  
 	   
- 
+	this.RemoveImage = function(elem){
+		elem.sprite.rects.splice(elem.sprite.rects.indexOf(elem), 1);
+		elem.parentNode.removeChild(elem);
+		if(elem.sprite.rects.length == 0){
+			elem.sprite.width = 0;
+			elem.sprite.height = 0;
+		}
+	}
+	
 	this.Export = function(){
-
+	
+		//destroy old textures
+		while (this.div.firstChild) {
+			this.div.removeChild(this.div.firstChild);
+		}
+		
+		
 		var imagesRects = [];
 		//add images
 		for(var i = 0; i < editor.sprites.length; i++){
 			Array.prototype.push.apply(imagesRects, editor.sprites[i].rects); 
 		}
-		console.log(imagesRects);
+		
+		if(imagesRects.length == 0) return;
 		//atlas textures to export
 		this.textures = []; 
-		
-		//destroy old textures
-		while (this.div.firstChild) {
-			this.div.removeChild(this.div.firstChild);
-		}
 		
 		//setup rects
 		for(var i = 0; i< imagesRects.length; i++){
@@ -251,16 +297,16 @@ function Editor(){
 		packer.fit(imagesRects);
 		
 		var error = false;
-		for(rect in imagesRects)
-		{
-			if(rect.fit)
+		for(var i = 0; i< imagesRects.length; i++){
+			var rect = imagesRects[i];
+			if(!rect.fit)
 			{
 				error = true;
 				break;
 			}
 		}
 		
-		if( !error)
+		if(!error)
 		{
 			//render   
 			var canvas = document.createElement('canvas'); 
@@ -282,19 +328,20 @@ function Editor(){
 				canvas.ctx.drawImage(rect.image, offset+rect.fit.x, offset+rect.fit.y);  
 			}
 			
-			var str = "";
 			
 			for(var i = 0; i < editor.sprites.length; i++){
-				var spr = editor.sprites[i]; 
-				str += "s "+spr.name+" "+spr.rects.length +" "+spr.width +" "+spr.height +" 0 0\n";
+				
+				var spr = editor.sprites[i];
+				spr.text = "";
+				spr.text += "s "+spr.name+" "+spr.rects.length +" "+spr.width +" "+spr.height +" 0 0\n";
 				
 				for(var j = 0; j < spr.rects.length; j++){
 					var rect = spr.rects[j];
-					str +=  (offset+rect.fit.x)+" "+(offset+rect.fit.y)+"\n";
+					spr.text +=  (offset+rect.fit.x)+" "+(offset+rect.fit.y)+"\n";
 				}
 			}
 			
-			$("output").value = str;//"exported the void!";//JSON.stringify(this.verts);
+			//$("output").value = str; "exported the void!";//JSON.stringify(this.verts);
 			$("saveFiles").style.display = "inline";
 		
 		}
