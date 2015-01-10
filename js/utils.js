@@ -8,6 +8,24 @@ window.requestAnimFrame = (function(callback) {
 	};
 })();
 
+function getBase64Image(imgage) {
+    var canvas = document.createElement("canvas");
+    canvas.width = imgage.width;
+    canvas.height = imgage.height;
+
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(imgage, 0, 0);
+
+    var dataURL = canvas.toDataURL("image/png");
+    return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+}
+
+function SetDivSize(div, x, y, width, height){
+	div.style.left = x + "px";
+	div.style.top = y + "px";
+	div.style.width = width + "px";
+	div.style.height = height + "px";
+}
 Math.clamp = function(x, min, max) {
     return x < min ? min : (x > max ? max : x);
 };

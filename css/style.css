@@ -1,5 +1,5 @@
 
-body,p,div{ margin:0; border:0;padding:0; font:11pt 'Segoe UI', Verdana} 
+body,p,div{ margin:0; border:0;padding:0;} 
 p{border:1px solid #ddd; padding:4px; padding-bottom:0px;}
 #help{padding:5px;}
 div{border:1px solid #555;}  
@@ -48,3 +48,133 @@ div{border:1px solid #555;}
 	background-color: #333;
 	border: none;
 } 
+
+
+
+
+/*
+	LINKS
+*/
+
+.inline-link {
+    display: inline-block;
+    position: relative;
+    padding-left: 6px;
+    /* Font styles */
+    text-decoration: none;
+    color: #6AB3EC;
+    text-shadow: 0 1px 1px rgba(255,255,255,0.9);
+}
+
+.inline-link:hover {
+    color: #3C9CE7;
+}
+
+.inline-link:before {
+    content: "\25BA";
+    font-size: 80%;
+    display: inline-block;
+    padding-right: 3px;
+    pointer-events: none;
+}
+
+.inline-link:hover:before {
+    color: #F2BF97;
+}
+
+.inline-link-1 {
+  display: inline-block;
+  margin: 0 0.2em;
+  padding: 3px;
+  background: #97CAF2;
+  border-radius: 2px;
+  transition: all 0.3s ease-out;
+
+  /* Font styles */
+  text-decoration: none;
+  font-weight: bold;
+  color: white;
+}
+
+.inline-link-1:hover   { background: #53A7EA; }
+.inline-link-1:active  { background: #C4E1F8; }
+.inline-link-1:visited { background: #F2BF97; }
+ 
+/* Basic Grey */
+p{
+    padding: 2px 2px 2px 2px; 
+}
+
+div{
+    background: #F7F7F7; 
+    font: 12px Georgia, "Times New Roman", Times, serif;
+    color: #888;
+    text-shadow: 1px 1px 1px #FFF;
+    border:1px solid #E4E4E4;
+}
+h2 {
+    font: 28px "Helvetica", Georgia, Arial, Sans serif; 
+    color: #222;
+    margin: 10px 5px; 
+}
+h1>span {
+    display: block;
+    font-size: 11px;
+}
+label {
+    display: block;
+    margin: 0px;
+}
+label>span {
+    float: left;
+    width: 20%;
+    text-align: right;
+    padding-right: 10px;
+    margin-top: 10px;
+    color: #888;
+}
+input[type="text"], textarea {
+    border: 1px solid #DADADA;
+	margin-right:3px;
+    color: #888;
+    height: 28px; 
+    outline: 0 none;
+    padding: 3px 3px 3px 7px; 
+    font-size: 12px; 
+    box-shadow: inset 0px 1px 4px #ECECEC;
+    -moz-box-shadow: inset 0px 1px 4px #ECECEC;
+    -webkit-box-shadow: inset 0px 1px 4px #ECECEC;
+}
+
+input[type="text"]:hover,input[type="text"]:focus, textarea:hover {
+    box-shadow: inset 0px 1px 4px #ddd;
+    -moz-box-shadow: inset 0px 1px 4px #ddd;
+    -webkit-box-shadow: inset 0px 1px 4px #ddd;
+}
+textarea{
+    padding: 1px 1px 1px 1px; 
+}
+select {   
+    text-indent: 0.01px;
+    text-overflow: ''; 
+    height: 30px;
+    line-height: 25px;
+}
+textarea{
+    height:100px;
+}
+input[type="button"]{
+	margin-left:2px;
+	margin-right:2px;
+    background: #E27575;
+    border: none;
+    padding: 6px 12px 6px 12px;
+    color: #FFF;
+    box-shadow: 1px 1px 5px #B6B6B6;
+    border-radius: 3px;
+    text-shadow: 1px 1px 1px #9E3F3F;
+    cursor: pointer;
+}
+input[type="button"]:hover {
+    background: #CF7A7A
+}

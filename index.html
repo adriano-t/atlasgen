@@ -9,6 +9,7 @@
 	<script language="javascript" src="js/packer.js" ></script> 
 	<script language="javascript" src="js/canvasblob.js" ></script> 
 	<script language="javascript" src="js/FileSaver.js" ></script> 
+	<script language="javascript" src="js/jszip.min.js" ></script> 
 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 </head>
 <body style="background-color:#eee;" >
@@ -17,12 +18,10 @@
 	</div> 
 	<div id="Options" style="overflow:auto; position:absolute;">
 		 <h2 style="text-align:center;" > Atlas Generator </h2> 
+
 		<p>
-			
-			<input style="float:right;" id="showHelp" type="button" value="Help" />
-		</p>
-		 
-		<p><b>Texture Size</b> <select id="textureSize" > 
+		<input style="float:right;" id="showHelp" type="button" value="Help" />
+		<b>Texture Size</b> <select id="textureSize" > 
 				<option >2048</option>
 				<option >1024</option>
 				<option selected="selected" >512</option>
@@ -38,7 +37,7 @@
 		</p>
 		
 		 
-		<p><b>Sprites</b> <input id="addSprite" type="button" value="Add" /> </p>
+		<p><b>Sprites</b> <input id="addSprite" type="button" value="Add" /><input id="addSpriteMultiple" type="button" value="Load Multiple" /> </p>
 		
 		<p id="imagesContainer"></p>	 
 	
@@ -47,13 +46,22 @@
 	
 	<div id="help" style="background-color:#eee; display:none; position:absolute; z-index:1;">
 
-		<input id="closeHelp" type="button" value="close" style="float:left;"  />
+		<input onclick="$('help').style.display='none'"; type="button" value="X" style="float:right;" />
 		<h2 style="text-align:center" >HELP</h2> 
 		<p style="font-size:20px" ><b>How to use</b></p>
 		<ul>
 		<li>Create sprites</li>
 		<li>Add subimages</li>
 		<li>Click Generate</li>
+		</ul>
+		
+	</div>
+	
+	<div id="spriteOptions" style="background-color:#eee; display:none; position:absolute; z-index:1;">
+		<input onclick="$('spriteOptions').style.display='none'"; type="button" value="X" style="float:right;" />
+		<h2 style="text-align:center" >Sprite Options</h2> 
+		<p style="font-size:20px" ><b></b></p>
+		<ul>
 		</ul>
 		
 	</div>

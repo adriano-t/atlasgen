@@ -8,6 +8,7 @@ function StartEditor(){
 function Editor(){  
 	//working area 
 	 
+	 
 	this.textures = [];
 	this.sprites = [];
 	this.spr_name_index = 0;
@@ -28,7 +29,7 @@ function Editor(){
 		this.div.style.height = this.areaH + "px";
 		 
 		
-		optWidth = (window.innerWidth-5)/4 ;
+		optWidth = Math.max(330, (window.innerWidth-5)/4) ;
 		this.divOpt = $("Options");
 		this.divOpt.style.padding = "5px";
 		this.divOpt.style.width = optWidth -10 + "px";
@@ -39,24 +40,40 @@ function Editor(){
 		
 		var helpW = window.innerWidth*3/4;
 		var helpH = window.innerHeight*4/5;
-		$("help").style.left = (window.innerWidth - helpW)/2 +"px" 
-		$("help").style.top = (window.innerHeight - helpH)/2 +"px" 
-		$("help").style.width = helpW + "px";
-		$("help").style.height = helpH + "px";
+		
+		SetDivSize($("help"), (window.innerWidth - helpW)/2, (window.innerHeight - helpH)/2, helpW, helpH);
+		
+		SetDivSize($("spriteOptions"), (window.innerWidth - helpW)/2, (window.innerHeight - helpH)/2, helpW, helpH);
 		 
-		$("textureSize").onchange = function(){ 
-			editor.textureSize = parseInt(this.options[this.selectedIndex].innerText);
-			console.log(editor.textureSize);
-		}; 
 	}
 	this.SetSize();
 	
 	  
+	var finput=document.createElement('input');
+	finput.type="file";
+	finput.multiple = true;
+	finput.style.display = "none";  
+	finput.onchange = function(){
+		editor.LoadMultipleSprites(this);
+	}
+	
+	$("addSpriteMultiple").onclick = function(){
+		finput.click();
+	}
+		 
+	$("textureSize").onchange = function(){ 
+		editor.textureSize = parseInt(this.options[this.selectedIndex].innerText);
+		console.log(editor.textureSize);
+	}; 
+		
 	$("export").onclick = function(){
 		editor.Export();
 	};
 	  
 	$("saveFiles").onclick = function(){
+	
+		var zip = new JSZip();
+		
 		var currentdate = new Date(); 
 		var fid = currentdate.getDate() + "_"
                 + (currentdate.getMonth()+1)  + "_" 
@@ -65,24 +82,24 @@ function Editor(){
                 + currentdate.getMinutes() + "_" 
                 + currentdate.getSeconds();
 				
+		
 		for(var i=0; i<editor.textures.length; i++){
 			var canvas = editor.textures[i];
-			canvas.toBlob(function(blob) {
-				saveAs(  blob , "AtlasTexture"+fid+".png" );
-			}, "image/png");
+			var savable = new Image();
+			savable.src = canvas.toDataURL();
+			zip.file("AtlasTexture"+fid + "/textures/AtlasTexture"+fid+".png", savable.src.substr(savable.src.indexOf(',')+1), {base64: true});
+				
 		}
+		
 		for(var i=0; i<editor.sprites.length; i++){
 			var sprite = editor.sprites[i];
-			saveAs(new Blob(["#texture AtlasTexture"+fid+".png\n", sprite.text], {type : 'text'}), sprite.name+".spr" );
+			zip.file("AtlasTexture"+fid + "/sprites/" + sprite.name+".spr", "#texture AtlasTexture"+fid+".png\n" +sprite.text ); 
 		}
+		var blob = zip.generate({type:"blob"}); 
+		saveAs(blob, "AtlasTexture"+fid+".zip");
 		
 	}
-	
-	$("closeHelp").onclick = function(){
-		$("help").style.display="none";
-	}
-	
-		
+	 
 	$("showHelp").onclick = function(){
 		$("help").style.display="block";
 	}
@@ -104,9 +121,9 @@ function Editor(){
 			name: "sprite" + this.spr_name_index++,
 			width: 0,
 			height: 0,
-			text: ""
-		}; 
-		spr.rects = [];
+			text: "",
+			rects: []
+		};  
 		editor.sprites.push(spr);
 		
 		var p = document.createElement('p');
@@ -115,6 +132,7 @@ function Editor(){
 		var name = document.createElement('input');
 		name.type = "text";
 		name.value = spr.name; 
+		name.style.width = "100px";
 		name.sprite = spr;
 		name.onkeyup = function(e){
 			console.log(e.keyCode );
@@ -142,7 +160,7 @@ function Editor(){
 		
 		var container = document.createElement('p'); 
 		container.sprite = spr;
-		
+		spr.container = container;
 		var finput=document.createElement('input');
 		finput.type="file";
 		finput.multiple = true;
@@ -156,7 +174,7 @@ function Editor(){
 		
 		var input=document.createElement('input'); 
 		input.type="button";
-		input.value = "add frame"; 
+		input.value = "+ Frame"; 
 		input.finput = finput;
 		input.onclick = function(){
 			finput.click();
@@ -167,12 +185,15 @@ function Editor(){
 		del.value = "x"; 
 		del.sprite = spr;
 		del.finput = finput;
-		del.onclick = function(){
-			if(confirm("Delete "+this.sprite.name+" ?")){
+		
+		del.addEventListener("click",function(e){
+			if(e.shiftKey || e.ctrlKey)
+				this.parentNode.parentNode.removeChild(this.parentNode);
+			else if(confirm("Delete "+this.sprite.name+" ?")){
 				this.parentNode.parentNode.removeChild(this.parentNode);
 			}
 			editor.sprites.splice(editor.sprites.indexOf(this.sprite), 1);
-		}
+		}, false);
 		
 		
 		$("imagesContainer").appendChild(p);
@@ -188,11 +209,68 @@ function Editor(){
 		div.style.border = "0";
 		container.appendChild(div);
 		
+		return spr;
 	}
 	
+	//Load Multiple Sprites
+	this.LoadMultipleSprites = function(element){ 
+		for(var i=0; i<element.files.length; i++){
+			var file = element.files[i]; 
+			
+			var fr = new FileReader();
+			fr.name = file.name;
+			 
+			fr.onload = function(){
+			
+				var extension = file.name.substr(file.name.lastIndexOf('.') + 1).toLowerCase();
+ 
+				if(extension == "png" || extension  == "jpg"  || extension  == "jpeg"  || extension  == "bmp" ){
+				
+					var sprite = editor.AddSprite();
+					
+					//image and rect for the atlas
+					var img = new Image();
+					img.name = this.name;
+					img.src = this.result;
+					
+					sprite.width = img.width;
+					sprite.height = img.height;
+					var rect = new Rect(img);
+					rect.sprite = sprite; 
+					sprite.rects.push(rect); 
+					
+					sprite.container.appendChild(PreviewImage(sprite, this)); 
+					 
+				}
+				
+			};
+			fr.readAsDataURL(file);
+		}
+	}   
 	
+	var PreviewImage = function(sprite, data){
+		//preview image
+		var img = new Image();
+		img.src = data.result; 
+		img.title ="("+img.width+", "+img.height+") "+data.name;
+		img.width = Math.min(48, img.width);
+		img.height = Math.min(48, img.height);
+		img.style.border = "1px dotted black";
+		img.style.margin = "2px"; 
+		img.sprite = sprite;
+		img.name = data.name;
+		img.onclick = function(e){
+			if(e.shiftKey || e.ctrlKey)
+				editor.RemoveImage(this);
+			else{
+				if (confirm("Delete sprite "+this.name+" ?\n\n (Keep CTRL pressed to avoid this dialog on delete)")) {
+					editor.RemoveImage(this);
+				}
+			}
+		}
+		return img;
+	}
 	//Load image file
-	 
 	this.OnChangeFile = function(element){ 
 	 
 		for(var i=0; i<element.files.length; i++){
@@ -220,26 +298,8 @@ function Editor(){
 						var rect = new Rect(img);
 						rect.sprite = element.sprite;
 						element.sprite.rects.push(rect); 
-						
-						//preview image
-						var img = new Image();
-						img.src = this.result; 
-						img.title = this.name + " ("+img.width+", "+img.height+")";
-						img.width = Math.min(48, img.width);
-						img.height = Math.min(48, img.height);
-						img.style.border = "1px dotted black"; 
-						img.sprite = element.sprite;
-						img.name = this.name;
-						img.onclick = function(e){
-							if(e.shiftKey || e.ctrlKey)
-								editor.RemoveImage(this);
-							else{
-								if (confirm("Delete sprite "+this.name+" ?\n\n (Keep CTRL pressed to avoid this dialog on delete)")) {
-									editor.RemoveImage(this);
-								}
-							}
-						}
-						element.container.appendChild(img); 
+						 
+						element.container.appendChild(PreviewImage(element.sprite, this));
 					}else{
 						alert(this.name + " has wrong sizes\n you need: "+element.sprite.width+"x"+element.sprite.height);
 					}
@@ -260,7 +320,6 @@ function Editor(){
 	}
 	
 	this.Export = function(){
-	
 		//destroy old textures
 		while (this.div.firstChild) {
 			this.div.removeChild(this.div.firstChild);
@@ -351,7 +410,6 @@ function Editor(){
 		}
 	}
 	  
-	 
 	function Rect(img){
 		this.image = img;
 		this.x = 0;
