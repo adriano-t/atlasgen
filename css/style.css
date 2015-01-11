@@ -101,9 +101,7 @@ div{border:1px solid #555;}
 .inline-link-1:visited { background: #F2BF97; }
  
 /* Basic Grey */
-p{
-    padding: 2px 2px 2px 2px; 
-}
+ 
 
 div{
     background: #F7F7F7; 
@@ -112,10 +110,23 @@ div{
     text-shadow: 1px 1px 1px #FFF;
     border:1px solid #E4E4E4;
 }
-h2 {
-    font: 28px "Helvetica", Georgia, Arial, Sans serif; 
-    color: #222;
-    margin: 10px 5px; 
+  
+
+h2 { 
+	padding:8px;
+	color: #eee;
+	text-shadow: -1px -1px 1px #969696, 1px 1px 1px #fff;
+    font: 28px "Segoe UI",sans-serif;
+	font-weight:  bold;
+	
+    margin: 10px 5px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	background: #f7f7f7 !important;
+    box-shadow: 1px 1px 1px #B6B6B6;
+	
+    border:1px solid #E4E4E4;
 }
 h1>span {
     display: block;
@@ -163,6 +174,16 @@ select {
 textarea{
     height:100px;
 }
+p{
+	margin:2px;
+	padding:4px;
+	background: #f7f7f7 !important;
+    box-shadow: 1px 1px 1px #B6B6B6;
+}
+#Options{
+	background: #eee !important;
+}
+
 input[type="button"]{
 	margin-left:2px;
 	margin-right:2px;
@@ -177,4 +198,11 @@ input[type="button"]{
 }
 input[type="button"]:hover {
     background: #CF7A7A
+}
+
+.back-blue {
+    background-color: #7575E2 !important;
+}
+.back-green {
+    background-color: #75E275 !important;
 }

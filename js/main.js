@@ -7,14 +7,13 @@ function StartEditor(){
 
 function Editor(){  
 	//working area 
-	 
+	  
 	 
 	this.textures = [];
 	this.sprites = [];
-	this.spr_name_index = 0;
 	this.textureSize= 512;
 	this.spacing = 1;
-	
+	this.projectSaved = true;
 	this.SetSize = function(){
 		
 		this.areaW = ((window.innerWidth-5)/4*3 - 5);
@@ -55,6 +54,7 @@ function Editor(){
 	finput.style.display = "none";  
 	finput.onchange = function(){
 		editor.LoadMultipleSprites(this);
+		this.value = '';
 	}
 	
 	$("addSpriteMultiple").onclick = function(){
@@ -62,26 +62,134 @@ function Editor(){
 	}
 		 
 	$("textureSize").onchange = function(){ 
-		editor.textureSize = parseInt(this.options[this.selectedIndex].innerText);
-		console.log(editor.textureSize);
+		editor.textureSize = parseInt(this.options[this.selectedIndex].innerText); 
 	}; 
 		
 	$("export").onclick = function(){
+	
 		editor.Export();
 	};
-	  
+	
+	
+	var finput2=document.createElement('input');
+	finput2.type="file"; 
+	finput2.style.display = "none";  
+	finput2.onchange = function(){
+		editor.LoadProject(this);
+		this.value = '';
+	}
+	
+	$("newProject").onclick = function(){
+		if(editor.projectSaved || confirm("Unsaved changes will be lost, continue?")){
+			editor.ClearProject();
+		}
+	}
+	
+	$("loadProject").onclick = function(){
+		if(editor.projectSaved || confirm("Unsaved changes will be lost, continue?")){
+			finput2.click(); 
+		}
+	}
+	this.LoadProject = function(element){ 
+		this.ClearProject();
+		for(var i=0; i<element.files.length; i++){ 
+			
+			var file = element.files[i];  
+			
+			var reader = new FileReader();
+			reader.name = file.name; 
+			reader.onload = function(){  
+				if(getExtension(this.name) == "zip"){
+					
+					var zip = new JSZip(this.result);
+					
+					var projFile = zip.files["project.agp"];
+					var data = JSON.parse(projFile.asText());
+					
+					for(var j=0; j<data.length; j++){
+						var sprInfo = data[j];
+						
+						var sprite = editor.AddSprite(sprInfo.name);
+						sprite.width = sprInfo.width;
+						sprite.height = sprInfo.height;
+						
+						for(var k=0; k<sprInfo.subimages.length; k++){
+							var imageName = "images/"+sprInfo.subimages[k]+".png"; 
+							//image and rect for the atlas
+							var img = new Image(); 
+							img.src = "data:image/png;base64,"+toBase64(zip.files[imageName].asUint8Array());
+							 
+							var rect = new Rect(img);
+							rect.sprite = sprite;
+							sprite.rects.push(rect); 
+							sprite.container.appendChild(PreviewImage(sprite, img.src, imageName));
+							
+						}
+						
+					}
+					
+					
+					/*
+					for(var entryName in zip.files){
+						entry = zip.files[entryName];
+						var ext = getExtension(entryName);
+						if(ext == "png"){
+							var img = new Image();
+							img.src = "data:image/png;base64,"+toBase64(entry.asUint8Array());
+							
+						}
+						
+					} 
+					*/ 
+				}else{
+					console.log("wrong format");
+				}
+			}
+		};
+		reader.readAsBinaryString(file);
+	}
+	
+	
+	$("saveProject").onclick = function(){
+		
+		var zip = new JSZip();
+		 
+		var fid = getDateString("_");
+		
+		var data = [];
+		var id = 0;
+		for(var i = 0; i < editor.sprites.length; i++){
+			var sprite = editor.sprites[i]; 
+			var obj = {
+				name : sprite.name,
+				width : sprite.width,
+				height : sprite.height,
+				subimages : []
+			}
+			for(var j = 0; j < sprite.rects.length; j++){
+				var img = sprite.rects[j].image; 
+				var name = sprite.name + "_"+id;
+				obj.subimages.push(name);
+				zip.file("images/"+name+".png", img.src.substr(img.src.indexOf(',')+1), {base64: true});
+				id++;				
+			}
+			data.push(obj);
+		}
+		 
+		zip.file("project.agp",  JSON.stringify(data, undefined, 2) ); 
+		
+		
+		var blob = zip.generate({type:"blob"}); 
+		saveAs(blob, "AtlasGen"+fid+".zip");
+		
+		editor.projectSaved = true;
+	}
+	
 	$("saveFiles").onclick = function(){
 	
 		var zip = new JSZip();
 		
-		var currentdate = new Date(); 
-		var fid = currentdate.getDate() + "_"
-                + (currentdate.getMonth()+1)  + "_" 
-                + currentdate.getFullYear() + "_"  
-                + currentdate.getHours() + "_"  
-                + currentdate.getMinutes() + "_" 
-                + currentdate.getSeconds();
-				
+		var fid = getDateString("_");
 		
 		for(var i=0; i<editor.textures.length; i++){
 			var canvas = editor.textures[i];
@@ -93,6 +201,7 @@ function Editor(){
 		
 		for(var i=0; i<editor.sprites.length; i++){
 			var sprite = editor.sprites[i];
+			console.log(sprite.name)
 			zip.file("AtlasTexture"+fid + "/sprites/" + sprite.name+".spr", "#texture AtlasTexture"+fid+".png\n" +sprite.text ); 
 		}
 		var blob = zip.generate({type:"blob"}); 
@@ -105,20 +214,15 @@ function Editor(){
 	}
 	
 	$("addSprite").onclick = function(){
-		editor.AddSprite(); 
+		editor.AddSprite("sprite"); 
 	}
 	
-	this.NameExists = function(name){
-		for(var i = 0; i < editor.sprites.length; i++){
-			if(editor.sprites[i].name == name)
-				return true;
-		}
-		return false;
-	}
 	
-	this.AddSprite = function(){
+	
+	this.AddSprite = function(spriteName){
+		editor.projectSaved = false;
 		var spr = {
-			name: "sprite" + this.spr_name_index++,
+			name: this.GetUniqueName(spriteName),
 			width: 0,
 			height: 0,
 			text: "",
@@ -134,8 +238,7 @@ function Editor(){
 		name.value = spr.name; 
 		name.style.width = "100px";
 		name.sprite = spr;
-		name.onkeyup = function(e){
-			console.log(e.keyCode );
+		name.onkeyup = function(e){ 
 			if(!e.ctrlKey && e.keyCode != 17){
 				start = this.selectionStart;
 				var str = this.value.replace(/[^a-zA-Z0-9_]/g, '');
@@ -160,6 +263,7 @@ function Editor(){
 		
 		var container = document.createElement('p'); 
 		container.sprite = spr;
+		container.name = name;
 		spr.container = container;
 		var finput=document.createElement('input');
 		finput.type="file";
@@ -169,6 +273,7 @@ function Editor(){
 		finput.container = container;
 		finput.onchange = function(){
 			editor.OnChangeFile(this);
+			this.value = '';
 		}
 		
 		
@@ -217,48 +322,49 @@ function Editor(){
 		for(var i=0; i<element.files.length; i++){
 			var file = element.files[i]; 
 			
-			var fr = new FileReader();
-			fr.name = file.name;
-			 
-			fr.onload = function(){
+			var reader = new FileReader();
+			reader.name = file.name;
 			
-				var extension = file.name.substr(file.name.lastIndexOf('.') + 1).toLowerCase();
+			console.log("reader");
+			reader.onload = function(){
+			
+				var extension = this.name.substr(this.name.lastIndexOf('.') + 1).toLowerCase();
  
 				if(extension == "png" || extension  == "jpg"  || extension  == "jpeg"  || extension  == "bmp" ){
 				
-					var sprite = editor.AddSprite();
+					var sprite = editor.AddSprite(this.name); 
 					
+			
 					//image and rect for the atlas
 					var img = new Image();
 					img.name = this.name;
-					img.src = this.result;
-					
+					img.src = this.result; 
 					sprite.width = img.width;
 					sprite.height = img.height;
 					var rect = new Rect(img);
 					rect.sprite = sprite; 
 					sprite.rects.push(rect); 
 					
-					sprite.container.appendChild(PreviewImage(sprite, this)); 
-					 
+					sprite.container.appendChild(PreviewImage(sprite, this.result, this.name)); 
+					
 				}
 				
 			};
-			fr.readAsDataURL(file);
+			reader.readAsDataURL(file);
 		}
 	}   
 	
-	var PreviewImage = function(sprite, data){
+	var PreviewImage = function(sprite, src, name){
 		//preview image
 		var img = new Image();
-		img.src = data.result; 
-		img.title ="("+img.width+", "+img.height+") "+data.name;
+		img.src = src; 
+		img.title ="("+img.width+", "+img.height+") "+name;
 		img.width = Math.min(48, img.width);
 		img.height = Math.min(48, img.height);
 		img.style.border = "1px dotted black";
 		img.style.margin = "2px"; 
 		img.sprite = sprite;
-		img.name = data.name;
+		img.name = name;
 		img.onclick = function(e){
 			if(e.shiftKey || e.ctrlKey)
 				editor.RemoveImage(this);
@@ -270,16 +376,23 @@ function Editor(){
 		}
 		return img;
 	}
-	//Load image file
+	
+	//Load subimage file
+	 
 	this.OnChangeFile = function(element){ 
 	 
 		for(var i=0; i<element.files.length; i++){
 			var file = element.files[i]; 
 			
-			var fr = new FileReader();
-			fr.name = file.name;
-			 
-			fr.onload = function(){
+			var reader = new FileReader();
+			reader.name = file.name;
+			
+			if(element.sprite.rects.length == 0){
+				var newName = editor.GetUniqueName(file.name);
+				element.sprite.container.name.value = newName;				
+				element.sprite.name = newName; 
+			}
+			reader.onload = function(){
 			
 				var extension = file.name.substr(file.name.lastIndexOf('.') + 1).toLowerCase();
  
@@ -298,15 +411,17 @@ function Editor(){
 						var rect = new Rect(img);
 						rect.sprite = element.sprite;
 						element.sprite.rects.push(rect); 
-						 
-						element.container.appendChild(PreviewImage(element.sprite, this));
+						if(i == 0){
+							element.sprite.container.name.value = this.GetUniqueName(this.name)
+						}
+						element.container.appendChild(PreviewImage(element.sprite, this.result, this.name));
 					}else{
 						alert(this.name + " has wrong sizes\n you need: "+element.sprite.width+"x"+element.sprite.height);
 					}
 				}
 				
 			};
-			fr.readAsDataURL(file);
+			reader.readAsDataURL(file);
 		}
 	}  
 	   
@@ -409,7 +524,40 @@ function Editor(){
 			alert("Can't complete. select a bigger texture \n There are too many sprites for this texture");
 		}
 	}
-	  
+	
+	this.ClearProject = function(){
+		editor.projectSaved = true;
+		//destroy old textures
+		while (this.div.firstChild) {
+			this.div.removeChild(this.div.firstChild);
+		}
+		//destroy sprites
+		editor.sprites = [];
+		var node = $("imagesContainer");
+		while (node.firstChild) {
+			node.removeChild(node.firstChild);
+		}
+	}
+	
+	this.NameExists = function(name){ 
+		for(var i = 0; i < editor.sprites.length; i++){
+			if(editor.sprites[i].name == name)
+				return true;
+		}
+		return false;
+	}
+	 
+	this.GetUniqueName = function(name){
+		if(name.lastIndexOf('.') > -1)
+			name = name.substr(0, name.lastIndexOf('.'));
+		var id = 0;
+		var result = name;
+		while(this.NameExists(result)){
+			result = name + id++;
+		}
+		return result;
+	}
+	
 	function Rect(img){
 		this.image = img;
 		this.x = 0;
