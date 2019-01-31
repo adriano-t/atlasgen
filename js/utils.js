@@ -23,13 +23,13 @@ window.requestAnimFrame = (function(callback) {
 	};
 })();
 
-function getBase64Image(imgage) {
+function getBase64Image(img) {
     var canvas = document.createElement("canvas");
-    canvas.width = imgage.width;
-    canvas.height = imgage.height;
+    canvas.width = img.width;
+    canvas.height = img.height;
 
     var ctx = canvas.getContext("2d");
-    ctx.drawImage(imgage, 0, 0);
+    ctx.drawImage(img, 0, 0);
 
     var dataURL = canvas.toDataURL("image/png");
     return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
@@ -41,6 +41,24 @@ function SetDivSize(div, x, y, width, height){
 	div.style.width = width + "px";
 	div.style.height = height + "px";
 }
+ 
+function CropImage (img, offsetX, offsetY, width, height) { 
+  var buffer = document.createElement('canvas');
+  var b_ctx = buffer.getContext('2d'); 
+  buffer.width = width;
+  buffer.height = height;
+ 
+  b_ctx.drawImage(img, offsetX, offsetY, width, height,
+                  0, 0, buffer.width, buffer.height);
+  var img = new Image();
+  img.src = buffer.toDataURL(); 
+  img.width = width;
+  img.height = height;
+  return img;
+};
+
+
+
 Math.clamp = function(x, min, max) {
     return x < min ? min : (x > max ? max : x);
 };

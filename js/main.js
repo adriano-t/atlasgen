@@ -12,7 +12,7 @@ function Editor(){
 	this.textures = [];
 	this.sprites = [];
 	this.textureSize= 512;
-	this.spacing = 1;
+	this.spacing = 0;
 	this.projectSaved = true;
 	this.SetSize = function(){
 		
@@ -61,6 +61,18 @@ function Editor(){
 		finput.click();
 	}
 		 
+	var inputstrip=document.createElement('input');
+	inputstrip.type="file";
+	inputstrip.multiple = false;
+	inputstrip.style.display = "none";  
+	inputstrip.onchange = function(){
+		editor.LoadSpriteStrip(this);
+		this.value = '';
+	}
+	$("addSpriteStrip").onclick = function(){
+		inputstrip.click();
+	}
+	
 	$("textureSize").onchange = function(){ 
 		editor.textureSize = parseInt(this.options[this.selectedIndex].innerText); 
 	}; 
@@ -377,6 +389,62 @@ function Editor(){
 		return img;
 	}
 	
+	
+	//Load Multiple Sprites
+	this.LoadSpriteStrip = function(element){ 
+		for(var i=0; i<element.files.length; i++){
+			var file = element.files[i]; 
+			
+			var reader = new FileReader();
+			reader.name = file.name;
+			
+			reader.onload = function(){
+			
+				var extension = this.name.substr(this.name.lastIndexOf('.') + 1).toLowerCase();
+				
+				if(extension == "png" || extension  == "jpg"  || extension  == "jpeg"  || extension  == "bmp" ){
+				
+					var sprite = editor.AddSprite(this.name); 
+					
+					console.log("added new sprite");
+			
+					var count = parseInt(prompt("Number of images", "0"), NaN);
+					if(count == NaN)
+						return;
+					//image and rect for the atlas
+					var img = new Image();
+					img.name = this.name;
+					img.src = this.result;
+					img.onload = function(){
+						
+						sprite.width = img.width / count;
+						sprite.height = img.height;
+						
+						for(var i = 0; i < count; i++)
+						{
+							console.log("loaded");
+							stripImg = CropImage(this, i * sprite.width, 0, sprite.width, sprite.height);
+							 
+							var rect = new Rect(stripImg);
+							rect.sprite = sprite; 
+							sprite.rects.push(rect); 
+							
+							sprite.container.appendChild(PreviewImage(sprite, stripImg.src, img.name)); 
+							 
+							
+						}
+					}
+						
+					
+					
+				}
+				
+			};
+			reader.readAsDataURL(file);
+		}
+	}   
+	
+	
 	//Load subimage file
 	 
 	this.OnChangeFile = function(element){ 
@@ -564,6 +632,7 @@ function Editor(){
 		this.y = 0;
 		this.w = img.width+editor.spacing*2;
 		this.h = img.height+editor.spacing*2;
+		console.log(img,  this.w, this.h);
 		this.area = this.w*this.h; 
 	}
 	 
