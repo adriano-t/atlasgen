@@ -2,4 +2,4 @@
 HTML5 Atlas Generator
 
 #Live Demo
-http://adriano-t.github.com/atlasgen
+http://adriano-t.github.io/atlasgen/
